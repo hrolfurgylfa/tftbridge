@@ -13,21 +13,21 @@ class TftBridge:
         #
         # get config
         #
-        self.tftDevice = config.get("tft_device")
-        self.tftBaud = config.getint("tft_baud")
-        self.tftTimeout = config.getint("tft_timeout")
-        self.klipperDevice = config.get("klipper_device")
-        self.klipperBaud = config.getint("klipper_baud")
-        self.klipperTimeout = config.getint("klipper_timeout")
+        self.tft_device = config.get("tft_device")
+        self.tft_baud = config.getint("tft_baud")
+        self.tft_timeout = config.getint("tft_timeout")
+        self.klipper_device = config.get("klipper_device")
+        self.klipper_baud = config.getint("klipper_baud")
+        self.klipper_timeout = config.getint("klipper_timeout")
         #
         # connections to TFT35 and Klipper serial ports
         #
-        self.tftSerial = None
-        self.klipperSerial = None
+        self.tft_serial = None
+        self.klipper_serial = None
         #
         # event to signal stopping threads
         #
-        self.stopEvent = threading.Event()
+        self.stop_event = threading.Event()
         #
         # register event handlers
         #
@@ -37,12 +37,12 @@ class TftBridge:
     #
     # open serial port to device
     #
-    def openDevice(self, device, baud, timeout):
+    def open_device(self, device, baud, timeout):
         if timeout == 0:
-            serialPort = serial.Serial(device, baud)
+            serial_port = serial.Serial(device, baud)
         else:
-            serialPort = serial.Serial(device, baud, timeout=timeout)
-        return serialPort
+            serial_port = serial.Serial(device, baud, timeout=timeout)
+        return serial_port
 
     #
     # event handler when printer is ready
@@ -51,27 +51,27 @@ class TftBridge:
         #
         # create connections to devices if needed
         #
-        if self.tftSerial is None:
+        if self.tft_serial is None:
             try:
-                self.tftSerial = self.openDevice(
-                    self.tftDevice, self.tftBaud, self.tftTimeout
+                self.tft_serial = self.open_device(
+                    self.tft_device, self.tft_baud, self.tft_timeout
                 )
             except Exception as e:
                 print(f"Failed to establish tft connection: {e}")
-                self.tftSerial = None
+                self.tft_serial = None
 
-        if self.klipperSerial is None:
+        if self.klipper_serial is None:
             try:
-                self.klipperSerial = self.openDevice(
-                    self.klipperDevice, self.klipperBaud, self.klipperTimeout
+                self.klipper_serial = self.open_device(
+                    self.klipper_device, self.klipper_baud, self.klipper_timeout
                 )
             except Exception as e:
                 print(f"Failed to establish klipper connection: {e}")
-                self.klipperSerial = None
+                self.klipper_serial = None
         #
         # create and start threads
         #
-        self.stopEvent.clear()
+        self.stop_event.clear()
         threading.Thread(target=self.tft2klipper).start()
         threading.Thread(target=self.klipper2tft).start()
 
@@ -83,23 +83,23 @@ class TftBridge:
             #
             # if stopping thread event is set
             #
-            if self.stopEvent.is_set():
-                if self.tftSerial is not None:
-                    self.tftSerial.close()  # close connection to TFT35
-                self.tftSerial = None  # clear property
+            if self.stop_event.is_set():
+                if self.tft_serial is not None:
+                    self.tft_serial.close()  # close connection to TFT35
+                self.tft_serial = None  # clear property
                 break
             #
             # otherwise read from TFT35 and forward to Klipper
             #
-            if self.tftSerial is not None and self.klipperSerial is not None:
+            if self.tft_serial is not None and self.klipper_serial is not None:
                 try:
-                    line = self.tftSerial.readline()
+                    line = self.tft_serial.readline()
                 except Exception as e:
                     print(f"Failed to read from tft {e}")
                     line = ""
                 if line != "":  # if readline timeout, it returns an empty str
                     try:
-                        self.klipperSerial.write(line)
+                        self.klipper_serial.write(line)
                     except Exception as e:
                         print(f"Failed to write to klipper {e}")
 
@@ -111,23 +111,23 @@ class TftBridge:
             #
             # if stopping thread event is set
             #
-            if self.stopEvent.is_set():
-                if self.klipperSerial is not None:
-                    self.klipperSerial.close()  # close connection to Klipper
-                self.klipperSerial = None  # clear property
+            if self.stop_event.is_set():
+                if self.klipper_serial is not None:
+                    self.klipper_serial.close()  # close connection to Klipper
+                self.klipper_serial = None  # clear property
                 break
             #
             # otherwise read from Klipper and forward to TFT35
             #
-            if self.tftSerial is not None and self.klipperSerial is not None:
+            if self.tft_serial is not None and self.klipper_serial is not None:
                 try:
-                    line = self.klipperSerial.readline()
+                    line = self.klipper_serial.readline()
                 except Exception as e:
                     print(f"Failed to read from klipper {e}")
                     line = ""
                 if line != "":  # if readline timeout, it returns an empty str
                     try:
-                        self.tftSerial.write(line)
+                        self.tft_serial.write(line)
                     except Exception as e:
                         print(f"Failed to write to tft {e}")
 
@@ -136,7 +136,7 @@ class TftBridge:
     #
 
     def handle_disconnect(self):
-        self.stopEvent.set()  # signal threads to stop
+        self.stop_event.set()  # signal threads to stop
 
 
 #
