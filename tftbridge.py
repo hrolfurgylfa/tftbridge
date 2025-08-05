@@ -51,7 +51,7 @@ class TftBridge:
         #
         # create connections to devices if needed
         #
-        if self.tftSerial == None:
+        if self.tftSerial is None:
             try:
                 self.tftSerial = self.openDevice(
                     self.tftDevice, self.tftBaud, self.tftTimeout
@@ -60,7 +60,7 @@ class TftBridge:
                 print(f"Failed to establish tft connection: {e}")
                 self.tftSerial = None
 
-        if self.klipperSerial == None:
+        if self.klipperSerial is None:
             try:
                 self.klipperSerial = self.openDevice(
                     self.klipperDevice, self.klipperBaud, self.klipperTimeout
@@ -84,14 +84,14 @@ class TftBridge:
             # if stopping thread event is set
             #
             if self.stopEvent.is_set():
-                if self.tftSerial != None:
+                if self.tftSerial is not None:
                     self.tftSerial.close()  # close connection to TFT35
                 self.tftSerial = None  # clear property
                 break
             #
             # otherwise read from TFT35 and forward to Klipper
             #
-            if self.tftSerial != None and self.klipperSerial != None:
+            if self.tftSerial is not None and self.klipperSerial is not None:
                 try:
                     line = self.tftSerial.readline()
                 except Exception as e:
@@ -112,14 +112,14 @@ class TftBridge:
             # if stopping thread event is set
             #
             if self.stopEvent.is_set():
-                if self.klipperSerial != None:
+                if self.klipperSerial is not None:
                     self.klipperSerial.close()  # close connection to Klipper
                 self.klipperSerial = None  # clear property
                 break
             #
             # otherwise read from Klipper and forward to TFT35
             #
-            if self.tftSerial != None and self.klipperSerial != None:
+            if self.tftSerial is not None and self.klipperSerial is not None:
                 try:
                     line = self.klipperSerial.readline()
                 except Exception as e:
