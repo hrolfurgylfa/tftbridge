@@ -56,7 +56,8 @@ class TftBridge:
                 self.tftSerial = self.openDevice(
                     self.tftDevice, self.tftBaud, self.tftTimeout
                 )
-            except:
+            except Exception as e:
+                print(f"Failed to establish tft connection: {e}")
                 self.tftSerial = None
 
         if self.klipperSerial == None:
@@ -64,7 +65,8 @@ class TftBridge:
                 self.klipperSerial = self.openDevice(
                     self.klipperDevice, self.klipperBaud, self.klipperTimeout
                 )
-            except:
+            except Exception as e:
+                print(f"Failed to establish klipper connection: {e}")
                 self.klipperSerial = None
         #
         # create and start threads
@@ -92,10 +94,14 @@ class TftBridge:
             if self.tftSerial != None and self.klipperSerial != None:
                 try:
                     line = self.tftSerial.readline()
-                    if line != "":  # if readline timeout, it returns an empty str
+                except Exception as e:
+                    print(f"Failed to read from tft {e}")
+                    line = ""
+                if line != "":  # if readline timeout, it returns an empty str
+                    try:
                         self.klipperSerial.write(line)
-                except:
-                    pass
+                    except Exception as e:
+                        print(f"Failed to write to klipper {e}")
 
     #
     # forward data from Klipper to TFT35
@@ -116,10 +122,14 @@ class TftBridge:
             if self.tftSerial != None and self.klipperSerial != None:
                 try:
                     line = self.klipperSerial.readline()
-                    if line != "":  # if readline timeout, it returns an empty str
+                except Exception as e:
+                    print(f"Failed to read from klipper {e}")
+                    line = ""
+                if line != "":  # if readline timeout, it returns an empty str
+                    try:
                         self.tftSerial.write(line)
-                except:
-                    pass
+                    except Exception as e:
+                        print(f"Failed to write to tft {e}")
 
     #
     # event handler when printer is disconnected
