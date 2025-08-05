@@ -1,8 +1,9 @@
-#
-# BigTreeTech TFT35 bridge
-#
-# Author: K. Hui
-#
+"""
+BigTreeTech TFT35 bridge
+
+Author: K. Hui
+"""
+
 from typing import Any
 import serial
 import threading
@@ -35,20 +36,16 @@ class TftBridge:
         self.printer.register_event_handler("klippy:ready", self.handle_ready)
         self.printer.register_event_handler("klippy:disconnect", self.handle_disconnect)
 
-    #
-    # open serial port to device
-    #
     def open_device(self, device: str, baud: int, timeout: int):
+        """Open serial port to device."""
         if timeout == 0:
             serial_port = serial.Serial(device, baud)
         else:
             serial_port = serial.Serial(device, baud, timeout=timeout)
         return serial_port
 
-    #
-    # event handler when printer is ready
-    #
     def handle_ready(self):
+        """Event handler when printer is ready."""
         #
         # create connections to devices if needed
         #
@@ -76,10 +73,8 @@ class TftBridge:
         threading.Thread(target=self.tft2klipper).start()
         threading.Thread(target=self.klipper2tft).start()
 
-    #
-    # forward data from TFT35 to Klipper
-    #
     def tft2klipper(self):
+        """Forward data from TFT35 to Klipper."""
         while True:
             #
             # if stopping thread event is set
@@ -104,10 +99,8 @@ class TftBridge:
                     except Exception as e:
                         print(f"Failed to write to klipper {e}")
 
-    #
-    # forward data from Klipper to TFT35
-    #
     def klipper2tft(self):
+        """Forward data from Klipper to TFT35."""
         while True:
             #
             # if stopping thread event is set
@@ -132,18 +125,11 @@ class TftBridge:
                     except Exception as e:
                         print(f"Failed to write to tft {e}")
 
-    #
-    # event handler when printer is disconnected
-    #
-
     def handle_disconnect(self):
+        """Event handler when printer is disconnected."""
         self.stop_event.set()  # signal threads to stop
 
 
-#
-# config loading function of add-on
-#
-
-
 def load_config(config: Any):
+    """Config loading function of add-on."""
     return TftBridge(config)
