@@ -3,6 +3,7 @@
 #
 # Author: K. Hui
 #
+from typing import Any
 import serial
 import threading
 
@@ -13,17 +14,17 @@ class TftBridge:
         #
         # get config
         #
-        self.tft_device = config.get("tft_device")
-        self.tft_baud = config.getint("tft_baud")
-        self.tft_timeout = config.getint("tft_timeout")
-        self.klipper_device = config.get("klipper_device")
-        self.klipper_baud = config.getint("klipper_baud")
-        self.klipper_timeout = config.getint("klipper_timeout")
+        self.tft_device: str = config.get("tft_device")
+        self.tft_baud: int = config.getint("tft_baud")
+        self.tft_timeout: int = config.getint("tft_timeout")
+        self.klipper_device: str = config.get("klipper_device")
+        self.klipper_baud: int = config.getint("klipper_baud")
+        self.klipper_timeout: int = config.getint("klipper_timeout")
         #
         # connections to TFT35 and Klipper serial ports
         #
-        self.tft_serial = None
-        self.klipper_serial = None
+        self.tft_serial: serial.Serial | None = None
+        self.klipper_serial: serial.Serial | None = None
         #
         # event to signal stopping threads
         #
@@ -37,7 +38,7 @@ class TftBridge:
     #
     # open serial port to device
     #
-    def open_device(self, device, baud, timeout):
+    def open_device(self, device: str, baud: int, timeout: int):
         if timeout == 0:
             serial_port = serial.Serial(device, baud)
         else:
@@ -144,5 +145,5 @@ class TftBridge:
 #
 
 
-def load_config(config):
+def load_config(config: Any):
     return TftBridge(config)
